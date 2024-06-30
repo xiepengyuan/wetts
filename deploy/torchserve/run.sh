@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=6 CUDA_MPS_PIPE_DIRECTORY=/tmp/nvidia-mps torchserve --start --ts-config config.properties

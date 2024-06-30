@@ -1,0 +1,71 @@
+# 只要词组或者其拼接的短语出现这种组合，这就是其固定读音，优先级最高
+要是行 yao4 shi4 xing2
+干一行 gan4 yi4 hang2
+行一行 xing2 yi4 hang2
+干一行行一行 gan4 yi4 hang2 xing2 yi4 hang2
+一行行行行行 yi4 hang2 xing2 hang2 hang2 xing2
+不行一行 bu4 xing2 yi4 hang2
+一行不行 yi4 hang2 bu4 xing2
+行行不行 hang2 hang2 bu4 xing2
+哪行 na3 hang2
+这着 zhe4 zhao1
+了望 liao4 wang4
+望了望 wang4 le5 wang4
+上了当 shang4 le5 dang4
+大伯子 da4 bai3 zi5
+重重地 zhong4 zhong4 de5
+和泥抹墙 huo2 ni2 mo4 qiang2
+混蛋 hun2 dan4
+蕃衍 fan2 yan3
+簸米 bo3 mi3
+射中 she4 zhong4
+得重重鞭 dei3 zhong4 zhong4 bian1
+得辟谣 dei3 pi4 yao2
+单老师 shan4 lao3 shi1
+涨红着脸 zhang4 hong2 zhe5 lian3
+刨花生 pao2 hua1 sheng1
+炮羊肉 bao1 yang2 rou4
+倾轧 qing1 ya4
+得系上 dei3 ji4 shang4
+果脯 guo3 fu3
+囤满 tun2 man3
+混水 hun2 shui3
+称杆 cheng4 gan3
+膀肿 pang1 zhong3
+塞不住 sai1 bu2 zhu4
+朝阳升起 zhao1 yang2 sheng1 qi3
+少先队员 shao4 xian1 dui4 yuan2
+澄清混水 deng4 qing1 hun2 shui3
+扇不来风 shan1 bu4 lai2 feng1
+粘不紧 zhan1 bu4 jin3
+使人膀肿 shi3 ren2 pang1 zhong3
+小强 xiao3 qiang2
+瓶子倒了 ping2 zi5 dao3 le5
+倒了出来 dao4 le5 chu1 lai2
+疑心重重 yi2 xin1 chong2 chong2
+疑心重重的 yi2 xin1 chong2 chong2 de5
+忧虑重重 you1 lv4 chong2 chong2
+一场雨 yi4 chang2 yu3
+一场细雨 yi4 chang2 xi4 yu3
+一场大雨 yi4 chang2 da4 yu3
+一场透雨 yi4 chang2 tou4 yu3
+大喝一声 da4 he4 yi4 sheng1
+背着书包 bei1 zhe5 shu1 bao1
+和了 hu2 le5
+两石 liang3 dan4
+刨平 bao4 ping2
+梨耙 li2 ba4
+耙草 pa2 cao3
+姓乐 xing4 yue4
+不粘了 bu4 nian2 le5
+干干干 gan4 gan4 gan4
+到处跑 dao4 chu4 pao3
+一宿 yi4 xiu3
+干脏活 gan4 zang1 huo2
+还送 hai2 song4
+
+# 以下为多音词，暂时这么解决
+数数 shu3 shu4
+水缸把 shui3 gan1 ba4
+一行行 yi4 hang2 xing2
+行行行 hang2 hang2 xing2

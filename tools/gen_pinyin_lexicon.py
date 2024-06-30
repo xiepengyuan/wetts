@@ -37,6 +37,8 @@ FINALS = [
     'ueng', 'v', 've', 'van', 'vn'
 ]
 
+SPECIALS = ['sil', 'sp']
+
 
 def rule(C, V, R, T):
     """Generate a syllable given the initial, the final, erhua indicator,
@@ -141,7 +143,7 @@ def rule(C, V, R, T):
             V = 'un'
     result = C + V
 
-    # Filter er 不能再儿化
+    # Filter  er 不能再儿化
     if result.endswith('r') and R == 'r':
         return None
 
@@ -152,9 +154,7 @@ def rule(C, V, R, T):
     return result
 
 
-def generate_lexicon(with_zero_initial=False,
-                     with_tone=False,
-                     with_erhua=False):
+def generate_lexicon(with_tone=False, with_erhua=False):
     """Generate lexicon for Mandarin Chinese."""
     syllables = OrderedDict()
 
@@ -164,17 +164,16 @@ def generate_lexicon(with_zero_initial=False,
                 for T in [''] if not with_tone else ['1', '2', '3', '4', '5']:
                     result = rule(C, V, R, T)
                     if result:
-                        if C == '' and with_zero_initial:
-                            syllables[result] = f'^ {V}{R}{T}'
-                        else:
-                            syllables[result] = f'{C} {V}{R}{T}'
+                        syllables[result] = f'{C} {V}{R}{T}'
     return syllables
 
 
 def generate_symbols(lexicon):
     """Generate phoneme list for a lexicon."""
     symbols = set()
-    for _, phonemes in lexicon.items():
+    for p in SPECIALS:
+        symbols.add(p)
+    for syllable, phonemes in lexicon.items():
         phonemes = phonemes.split()
         for p in phonemes:
             symbols.add(p)
@@ -186,9 +185,6 @@ if __name__ == "__main__":
         description="Generate lexicon for Chinese pinyin to phoneme for MFA")
     parser.add_argument("lexicon", type=str, help="Path to save lexicon.")
     parser.add_argument("phones", type=str, help="Path to save lexicon.")
-    parser.add_argument("--with-zero-initial",
-                        action="store_true",
-                        help="whether to consider zero initial.")
     parser.add_argument("--with-tone",
                         action="store_true",
                         help="whether to consider tone.")
@@ -197,16 +193,15 @@ if __name__ == "__main__":
                         help="whether to consider erhua.")
     args = parser.parse_args()
 
-    lexicon = generate_lexicon(args.with_zero_initial, args.with_tone,
-                               args.with_r)
+    lexicon = generate_lexicon(args.with_tone, args.with_r)
     symbols = generate_symbols(lexicon)
 
-    with open(args.lexicon, 'w') as f:
+    with open(args.lexicon, 'wt') as f:
         for k, v in lexicon.items():
             # remove extra whitespaces
             f.write(re.sub(' {2,}', ' ', f"{k} {v}\n"))
 
-    with open(args.phones, 'w') as f:
+    with open(args.phones, 'wt') as f:
         for s in symbols:
             f.write(s + "\n")
 

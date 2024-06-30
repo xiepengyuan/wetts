@@ -1,0 +1,9 @@
+opt: -ac 1
+max_num_processors: 1
+num_commands: 100
+ext: WAV
+datasets:
+- name: null
+  src_dir: E:\\SpeechData\\cc\\tts\\wangwen-mix_wav_batch_bs1000
+  preprocessed_dir: E:\\SpeechData\\cc\\tts\\wangwen-mix_wav_batch
+  with_speaker_dir: false

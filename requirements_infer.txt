@@ -1,0 +1,4 @@
+monotonic_align
+opencc
+jieba
+transformers==4.30.2

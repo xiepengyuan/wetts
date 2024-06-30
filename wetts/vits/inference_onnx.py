@@ -13,113 +13,94 @@
 # limitations under the License.
 
 import argparse
-from pathlib import Path
+import time
 
 import numpy as np
-import onnxruntime as ort
 from scipy.io import wavfile
 import torch
 
-from utils import task
+import commons
+import utils
+
+try:
+    import onnxruntime as ort
+except ImportError:
+    print('Please install onnxruntime!')
+    sys.exit(1)
 
 
 def to_numpy(tensor):
-    return (tensor.detach().cpu().numpy()
-            if tensor.requires_grad else tensor.detach().numpy())
-
-def add_prefix(filepath, prefix):
-    filepath = Path(filepath)
-    return str(filepath.parent / (prefix + filepath.name))
+    return tensor.detach().cpu().numpy() if tensor.requires_grad \
+        else tensor.detach().numpy()
 
 
 def get_args():
-    parser = argparse.ArgumentParser(description="inference")
-    parser.add_argument("--onnx_model", required=True, help="onnx model")
-    parser.add_argument("--cfg", required=True, help="config file")
-    parser.add_argument("--outdir", required=True, help="ouput directory")
-    parser.add_argument("--phone_table",
+    parser = argparse.ArgumentParser(description='inference')
+    parser.add_argument('--onnx_model', required=True, help='onnx model')
+    parser.add_argument('--cfg', required=True, help='config file')
+    parser.add_argument('--outdir', required=True, help='ouput directory')
+    parser.add_argument('--phone_table',
                         required=True,
-                        help="input phone dict")
-    parser.add_argument("--speaker_table", default=True, help="speaker table")
-    parser.add_argument(
-        "--streaming",
-        action="store_true",
-        help="export streaming model"
-    )
-    parser.add_argument("--test_file", required=True, help="test file")
-    parser.add_argument(
-        "--providers",
-        required=False,
-        default="CPUExecutionProvider",
-        choices=["CUDAExecutionProvider", "CPUExecutionProvider"],
-        help="onnx runtime providers",
-    )
+                        help='input phone dict')
+    parser.add_argument('--speaker_table', default=None, help='speaker table')
+    parser.add_argument('--test_file', required=True, help='test file')
     args = parser.parse_args()
     return args
 
 
 def main():
     args = get_args()
+    print(args)
     phone_dict = {}
-    for line in open(args.phone_table):
-        phone_id = line.strip().split()
-        phone_dict[phone_id[0]] = int(phone_id[1])
-
+    with open(args.phone_table) as p_f:
+        for line in p_f:
+            phone_id = line.strip().split()
+            phone_dict[phone_id[0]] = int(phone_id[1])
     speaker_dict = {}
-    for line in open(args.speaker_table):
-        arr = line.strip().split()
-        assert len(arr) == 2
-        speaker_dict[arr[0]] = int(arr[1])
-    hps = task.get_hparams_from_file(args.cfg)
+    if args.speaker_table is not None:
+        with open(args.speaker_table) as p_f:
+            for line in p_f:
+                arr = line.strip().split()
+                assert len(arr) == 2
+                speaker_dict[arr[0]] = int(arr[1])
+    hps = utils.get_hparams_from_file(args.cfg)
+
+    ort_sess = ort.InferenceSession(args.onnx_model)
     scales = torch.FloatTensor([0.667, 1.0, 0.8])
     # make triton dynamic shape happy
     scales = scales.unsqueeze(0)
 
-    if args.streaming:
-        encoder_ort_sess = ort.InferenceSession(add_prefix(args.onnx_model, 'encoder_'),
-                                                providers=[args.providers])
-        decoder_ort_sess = ort.InferenceSession(add_prefix(args.onnx_model, 'decoder_'),
-                                                providers=[args.providers])
+    with open(args.test_file) as fin:
+        for line in fin:
+            arr = line.strip().split("|")
+            audio_path = arr[0]
+            if len(arr) == 2:
+                sid = 0
+                text = arr[1]
+            else:
+                sid = speaker_dict[arr[1]]
+                text = arr[2]
+            seq = [phone_dict[symbol] for symbol in text.split()]
+            if hps.data.add_blank:
+                seq = commons.intersperse(seq, 0)
 
-        def tts(ort_inputs):
-            z, g = encoder_ort_sess.run(None, ort_inputs)
-            decoder_inputs = {
-                "z": z,
-                "g": g,
+            x = torch.LongTensor([seq])
+            x_len = torch.IntTensor([x.size(1)]).long()
+            sid = torch.LongTensor([sid]).long()
+            ort_inputs = {
+                'input': to_numpy(x),
+                'input_lengths': to_numpy(x_len),
+                'scales': to_numpy(scales),
+                # 'sid': to_numpy(sid)
             }
-            return np.squeeze(decoder_ort_sess.run(None, decoder_inputs))
-
-    else:
-        ort_sess = ort.InferenceSession(args.onnx_model,
-                                        providers=[args.providers])
-
-        def tts(ort_inputs):
-            return np.squeeze(ort_sess.run(None, ort_inputs))
-
-
-    for line in open(args.test_file):
-        audio_path, speaker, text = line.strip().split("|")
-        sid = speaker_dict[speaker]
-        seq = [phone_dict[symbol] for symbol in text.split()]
-
-        x = torch.LongTensor([seq])
-        x_len = torch.IntTensor([x.size(1)]).long()
-        sid = torch.LongTensor([sid]).long()
-        ort_inputs = {
-            "input": to_numpy(x),
-            "input_lengths": to_numpy(x_len),
-            "scales": to_numpy(scales),
-            "sid": to_numpy(sid),
-        }
-        audio = tts(ort_inputs)
-        audio *= 32767.0 / max(0.01, np.max(np.abs(audio))) * 0.6
-        audio = np.clip(audio, -32767.0, 32767.0)
-        wavfile.write(
-            args.outdir + "/" + audio_path.split("/")[-1],
-            hps.data.sampling_rate,
-            audio.astype(np.int16),
-        )
+            st = time.time()
+            audio = np.squeeze(ort_sess.run(None, ort_inputs))
+            print(f"used time: {time.time() - st}s")
+            audio *= 32767.0 / max(0.01, np.max(np.abs(audio))) * 0.6
+            audio = np.clip(audio, -32767.0, 32767.0)
+            wavfile.write(args.outdir + "/" + audio_path.split("/")[-1],
+                          hps.data.sampling_rate, audio.astype(np.int16))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

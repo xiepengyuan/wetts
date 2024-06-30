@@ -1,0 +1,9 @@
+opt: -ar 22050 -ac 1
+max_num_processors: 20
+num_commands: 100
+ext: wav
+datasets:
+- name: null
+  src_dir: /data1/xiepengyuan/audio/tts/fanfan-wenyi/fanfan-wenyi_wav
+  preprocessed_dir: /data1/xiepengyuan/audio/tts/fanfan-wenyi/Wave
+  with_speaker_dir: false

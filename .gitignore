@@ -32,7 +32,6 @@ __pycache__/
 .DS_Store
 
 exp
-data
 raw_wav
 tensorboard
 **/*build*
